@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: config-service
+  cloud:
+    config.server.git:
+      uri: https://github.com/venkat6840/lovable-config-server
+      username: venkat6840
+      password: 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
+      default-label: main
+
+server:
+  port: 8888
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  cloud:
+    discovery:
+      enabled: false
+    config.server.git:
+      uri: https://github.com/venkat6840/lovable-config-server
+      username: ${GIT_USERNAME}
+      password: ${GIT_PASSWORD}
+      default-label: main
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
