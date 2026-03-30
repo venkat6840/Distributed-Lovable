@@ -93,18 +93,19 @@ public class AIGenerationServiceImpl implements AIGenerationService {
         .chatResponse()
         .doOnNext(
             response -> {
-              String content = response.getResult().getOutput().getText();
-              if (content != null
-                  && !content.isEmpty()
-                  && endTime.get() == 0) { // first non-empty chunk
-                endTime.set(System.currentTimeMillis());
-              }
+              if (response.getResult() != null && !response.getResults().isEmpty()) {
+                String content = response.getResult().getOutput().getText();
+                if (content != null
+                    && !content.isEmpty()
+                    && endTime.get() == 0) { // first non-empty chunk
+                  endTime.set(System.currentTimeMillis());
+                }
 
-              if (response.getMetadata().getUsage() != null) {
-                usageRef.set(response.getMetadata().getUsage());
+                if (response.getMetadata().getUsage() != null) {
+                  usageRef.set(response.getMetadata().getUsage());
+                }
+                fullResponseBuffer.append(content);
               }
-
-              fullResponseBuffer.append(content);
             })
         .doOnComplete(
             () -> {
@@ -124,8 +125,11 @@ public class AIGenerationServiceImpl implements AIGenerationService {
         .doOnError(error -> log.error("Error encountered during chat streaming", error))
         .map(
             response -> {
-              String text = Objects.requireNonNull(response.getResult().getOutput().getText());
-              return new StreamResponse(text != null ? text : "");
+              if (response.getResult() != null && !response.getResults().isEmpty()) {
+                String text = Objects.requireNonNull(response.getResult().getOutput().getText());
+                return new StreamResponse(text != null ? text : "");
+              }
+              return new StreamResponse("");
             });
   }
 

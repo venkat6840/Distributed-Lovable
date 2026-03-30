@@ -11,7 +11,7 @@
     <groupId>com.coding.distributed-lovable</groupId>
     <artifactId>Intelligent-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Intelligent-service</name>
+    <name>intelligence-service</name>
     <description>Intelligent service for Distributed Lovable clone application</description>
     <url/>
     <licenses>

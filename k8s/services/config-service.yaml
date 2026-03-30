@@ -24,12 +24,20 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
-            - name: GIT_USERNAME
+
+            - name: SPRING_CLOUD_CONFIG_SERVER_GIT_URI
+              value: https://github.com/venkat6840/lovable-config-server
+
+            - name: SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL
+              value: main
+
+            - name: SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: GIT_USERNAME
-            - name: GIT_PASSWORD
+
+            - name: SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
@@ -49,6 +57,7 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
+
 ---
 apiVersion: v1
 kind: Service
