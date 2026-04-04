@@ -31,10 +31,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        working-directory: ./${{ env.SERVICE_NAME }}
-        run: chmod +x ./mvnw && ./mvnw clean package
-
       - name: Build and Push Docker Image with Jib
         working-directory: ./${{ env.SERVICE_NAME }}
         run: |
