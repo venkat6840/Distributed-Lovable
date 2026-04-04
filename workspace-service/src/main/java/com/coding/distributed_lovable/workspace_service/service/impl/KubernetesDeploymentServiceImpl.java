@@ -39,17 +39,26 @@ public class KubernetesDeploymentServiceImpl implements DeploymentService {
 
   @Override
   public DeployResponse deploy(Long projectId) {
-    String domain = "project-" + projectId + ".app.domain.com";
+    // Dynamically build the domain: project-123.app.domain.com
+    String domain = "project-" + projectId + "." + baseDomain;
+
+    // Use default port 80 format logic for clean URLs, or explicit ports for local testing
+    String formattedUrl =
+        proxyPort.equals("80") ? "http://" + domain : "http://" + domain + ":" + proxyPort;
+
     Pod existingPod = findActivePod(projectId);
     if (existingPod != null) {
-      // the below url works when reverse proxy is configured
-      registerRoutes(domain, existingPod);
-      return new DeployResponse("http://" + domain + ":" + proxyPort);
+      log.info(
+          "Found existing pod {} for project {}. Resuming...",
+          existingPod.getMetadata().getName(),
+          projectId);
+      registerRoute(domain, existingPod);
+      return new DeployResponse(formattedUrl);
     }
-    return claimAndStartNewPod(projectId, domain);
+    return claimAndStartNewPod(projectId, domain, formattedUrl);
   }
 
-  private DeployResponse claimAndStartNewPod(Long projectId, String domain) {
+  private DeployResponse claimAndStartNewPod(Long projectId, String domain, String formattedUrl) {
     Pod pod =
         kubernetesClient
             .pods()
@@ -104,9 +113,11 @@ public class KubernetesDeploymentServiceImpl implements DeploymentService {
       log.info("Starting dev server for project {}...", projectId);
       execCommand(podName, "runner", "sh", "-c", startCmd);
 
-      registerRoutes(domain, pod);
-      log.info("Deployment successful: http://{}:{}", domain, proxyPort);
-      return new DeployResponse("http://" + domain + ":" + proxyPort);
+      Pod updatedPod = kubernetesClient.pods().inNamespace(namespace).withName(podName).get();
+      registerRoute(domain, updatedPod);
+
+      log.info("Deployment successful: {}", formattedUrl);
+      return new DeployResponse(formattedUrl);
     } catch (Exception e) {
       log.error("Deployment failed for project {}. Releasing pod {}.", projectId, podName, e);
       kubernetesClient.pods().inNamespace(namespace).withName(podName).delete();
@@ -149,13 +160,13 @@ public class KubernetesDeploymentServiceImpl implements DeploymentService {
     }
   }
 
-  private void registerRoutes(String domain, Pod pod) {
-
+  private void registerRoute(String domain, Pod pod) {
     String podIp = pod.getStatus().getPodIP();
     if (podIp == null) {
       throw new RuntimeException("Pod is running, but has no IP");
     }
     stringRedisTemplate.opsForValue().set("route:" + domain, podIp + ":5173", 6, TimeUnit.HOURS);
+    log.info("Route Registered: {} -> {}", domain, podIp);
   }
 
   private Pod findActivePod(Long projectId) {

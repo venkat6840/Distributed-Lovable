@@ -7,4 +7,19 @@
   <component name="JpaPluginProjectSettings">
     <option name="lastSelectedLanguage" value="Java" />
   </component>
+  <component name="PersistenceUnitSettings">
+    <persistence-units>
+      <persistence-unit moduleName="Intelligent-service" name="Default">
+        <packages>
+          <package value="com.coding.distributed_lovable.Intelligent_service" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="common-lib" name="Default" />
+      <persistence-unit moduleName="workspace-service" name="Default">
+        <packages>
+          <package value="com.coding.distributed_lovable.workspace_service" />
+        </packages>
+      </persistence-unit>
+    </persistence-units>
+  </component>
 </project>
