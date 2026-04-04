@@ -24,15 +24,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup and run Maven
-        run: chmod +x ./mvnw && ./mvnw clean package
-
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Build with Maven
+        working-directory: ./${{ env.SERVICE_NAME }}
+        run: chmod +x ./mvnw && ./mvnw clean package
 
       - name: Build and Push Docker Image with Jib
         working-directory: ./${{ env.SERVICE_NAME }}
